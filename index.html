@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>เกมบทบาท: คุณคือพระพุทธเจ้า</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun&display=swap');
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #f8f4e8;
+    margin: 0; padding: 20px;
+    display: flex; justify-content: center;
+    color: #5a4a2a;
+  }
+  #game-container {
+    background: #fff9f0;
+    max-width: 700px;
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(150, 125, 60, 0.15);
+    border: 2px solid #d9cbb1;
+    text-align: center;
+  }
+  h1 {
+    color: #7b5e1e;
+    margin-bottom: 25px;
+    font-weight: 700;
+  }
+  #story {
+    font-size: 19px;
+    line-height: 1.6;
+    min-height: 160px;
+    white-space: pre-line;
+    margin-bottom: 25px;
+    padding: 15px 20px;
+    background: #f0e6cd;
+    border-radius: 12px;
+    border: 1.5px solid #d9cbb1;
+  }
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  button {
+    padding: 14px 18px;
+    font-size: 17px;
+    background-color: #a57f34;
+    border: none;
+    border-radius: 10px;
+    color: #fff8dc;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 8px rgba(165, 127, 52, 0.5);
+  }
+  button:hover {
+    background-color: #7b6525;
+  }
+  #restart-btn, #start-btn {
+    width: 100%;
+    font-weight: 600;
+    margin-top: 30px;
+  }
+  #restart-btn {
+    background-color: #c64e42;
+    box-shadow: 0 4px 10px rgba(198, 78, 66, 0.6);
+  }
+  #restart-btn:hover {
+    background-color: #9a3b33;
+  }
+  #score-display {
+    text-align: center;
+    margin-top: 15px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #7b5e1e;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <h1>เกมบทบาท: คุณคือพระพุทธเจ้า</h1>
+  <div id="story">กดเริ่มเกมเพื่อเริ่มบทบาทพระพุทธเจ้า</div>
+  <div class="choices" id="choices"></div>
+  <div id="score-display"></div>
+  <button id="restart-btn" style="display:none;">เริ่มใหม่</button>
+  <button id="start-btn">เริ่มเกม</button>
+</div>
+
+<script>
+  const storyText = document.getElementById("story");
+  const choicesDiv = document.getElementById("choices");
+  const restartBtn = document.getElementById("restart-btn");
+  const startBtn = document.getElementById("start-btn");
+  const scoreDisplay = document.getElementById("score-display");
+
+  let score = 0;
+
+  function shuffleArray(arr) {
+    for(let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  const gameData = [
+    {
+      story: `คุณประสูติเป็นเจ้าชายสิทธัตถะในราชวงศ์ศากยะ ณ กรุงกบิลพัสดุ์\nคุณจะทำอย่างไร?`,
+      choices: [
+        { text: "รับการเลี้ยงดูอย่างอบอุ่นจากพระราชบิดา", next: 1, correct: true },
+        { text: "หลีกเลี่ยงครอบครัวและใช้ชีวิตตามใจ", next: "gameover", correct: false },
+        { text: "หนีออกจากวังทันที", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `คุณเติบโตในวังแต่เริ่มตั้งคำถามถึงทุกข์ในชีวิต\nคุณจะทำอย่างไร?`,
+      choices: [
+        { text: "ขอเรียนรู้ธรรมะและวิชาความรู้ต่าง ๆ", next: 2, correct: true },
+        { text: "หลีกเลี่ยงความจริงและเพิกเฉย", next: "gameover", correct: false },
+        { text: "ทำตัวตามใจไม่สนใจใคร", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `คุณตัดสินใจออกผนวชเพื่อแสวงหาความจริง\nคุณจะเลือกทางใด?`,
+      choices: [
+        { text: "ฝึกฝนวิปัสสนาและสมาธิอย่างเข้มข้น", next: 3, correct: true },
+        { text: "กลับไปใช้ชีวิตในวังเหมือนเดิม", next: "gameover", correct: false },
+        { text: "หยุดกลางทางเพราะท้อแท้", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `หลังจากฝึกฝนอย่างหนัก คุณยังไม่พบทางสว่าง\nคุณจะทำอย่างไร?`,
+      choices: [
+        { text: "ตั้งใจฝึกต่ออย่างไม่ยอมแพ้", next: 4, correct: true },
+        { text: "เลิกฝึกและหันไปหาความสุขโลกีย์", next: "gameover", correct: false },
+        { text: "โกรธและล้มเลิกทุกอย่าง", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `ในที่สุดคุณตรัสรู้ใต้ต้นโพธิ์\nคุณจะทำอย่างไรต่อไป?`,
+      choices: [
+        { text: "เริ่มเผยแผ่ธรรมเพื่อช่วยเหลือสรรพสัตว์", next: 5, correct: true },
+        { text: "เก็บคำสอนไว้เฉพาะตนเอง", next: "gameover", correct: false },
+        { text: "ลืมสิ่งที่ตรัสรู้และกลับไปชีวิตเดิม", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `คุณเริ่มเทศนาแก่ผู้คนที่ฟังอย่างตั้งใจ\nคุณจะทำอย่างไร?`,
+      choices: [
+        { text: "เผยแผ่ธรรมอย่างจริงจังและเมตตา", next: 6, correct: true },
+        { text: "ล้อเลียนผู้ฟังและไม่จริงจัง", next: "gameover", correct: false },
+        { text: "ปฏิเสธคำสอนของตนเอง", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `คุณทรงแสดงปฐมเทศนา ณ ป่า สารนาถ\nคุณจะดำเนินต่ออย่างไร?`,
+      choices: [
+        { text: "ประพฤติธรรมและสอนคนอย่างต่อเนื่อง", next: 7, correct: true },
+        { text: "หยุดสอนและใช้ชีวิตแบบคนทั่วไป", next: "gameover", correct: false },
+        { text: "ตั้งคำถามกับธรรมะที่ตรัสรู้", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `ชีวิตของคุณเต็มไปด้วยการสั่งสอนและเมตตา\nคุณจะทำอย่างไรในบั้นปลาย?`,
+      choices: [
+        { text: "สืบสานคำสอนและช่วยเหลือผู้อื่น", next: 8, correct: true },
+        { text: "เลิกสนใจคำสอนและทำตามใจ", next: "gameover", correct: false },
+        { text: "ทำลายธรรมะและคำสอนทั้งหมด", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `คุณเตรียมพร้อมเข้าสู่ปรินิพพานอย่างสงบ\nคุณจะเลือกอย่างไร?`,
+      choices: [
+        { text: "ยอมรับและปล่อยวาง", next: 9, correct: true },
+        { text: "ยึดติดและกลัวการตาย", next: "gameover", correct: false },
+        { text: "หนีไปจากความจริง", next: "gameover", correct: false }
+      ]
+    },
+    {
+      story: `คุณเข้าสู่ปรินิพพานอย่างสงบสุข\nขอแสดงความยินดี! คุณได้เป็นพระพุทธเจ้าอย่างแท้จริง 🎉`,
+      choices: [
+        { text: "เล่นใหม่", next: 0, correct: true },
+        { text: "จบเกม", next: "end", correct: true },
+        { text: "ออกจากเกม", next: "end", correct: true }
+      ]
+    }
+  ];
+
+  const insults = [
+    "โอ๊ย! ทำแบบนี้ใครจะเอาไปเป็นพระพุทธเจ้าได้วะ?!",
+    "ว้าว... เลือกแบบนี้ แล้วจะให้ตายแบบสงบได้ยังไง?!",
+    "ไอ้คนนี้มันใจง่ายชะมัด! เลือกผิดตั้งแต่ต้น!",
+    "เฮ้ย! ลองคิดดีๆ หน่อย จะทำแบบนี้ยังไงก็จบเกม!",
+    "หยุดเลย! ถ้าเลือกแบบนี้ คงไม่เหมาะจะเป็นพระพุทธเจ้าแน่!",
+    "นี่ไม่ใช่เกมโชว์! เลือกผิดแล้วโดนด่าแรงแบบนี้แหละ!",
+    "โถ... เล่นได้แย่มาก แบบนี้ไม่มีอนาคตจริงๆ!",
+    "ไม่อยากจะเชื่อเลย เลือกแบบนี้แล้วจะให้ฉลาดได้ยังไง?!",
+    "เลือดหนูไหล... เลือกแบบนี้พระพุทธเจ้าก็ไม่ปลื้ม!",
+    "เอิ่ม... นี่หรือทางเลือกของผู้รู้จริง?! ฮ่าๆ"
+  ];
+
+  function renderStep(stepIndex) {
+    choicesDiv.innerHTML = "";
+    scoreDisplay.textContent = `คะแนนของคุณ: ${score} / ${gameData.length - 1}`;
+
+    if(stepIndex === "gameover") {
+      const insult = insults[Math.floor(Math.random() * insults.length)];
+      storyText.textContent = insult + "\n\nเกมจบแล้วนะ! ลองใหม่อีกครั้งเถอะ!";
+      choicesDiv.innerHTML = "";
+      restartBtn.style.display = "block";
+      startBtn.style.display = "none";
+      scoreDisplay.textContent += `\nผลคะแนนสุดท้าย: ${score} / ${gameData.length - 1}`;
+      return;
+    }
+
+    if(stepIndex === "end") {
+      storyText.textContent = "ขอบคุณที่เล่นเกมนี้ครับ!";
+      choicesDiv.innerHTML = "";
+      restartBtn.style.display = "block";
+      startBtn.style.display = "none";
+      scoreDisplay.textContent = `คะแนนสุดท้าย: ${score} / ${gameData.length - 1}`;
+      return;
+    }
+
+    const step = gameData[stepIndex];
+    storyText.textContent = step.story;
+
+    const shuffledChoices = shuffleArray([...step.choices]);
+
+    shuffledChoices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.textContent = choice.text;
+      btn.onclick = () => {
+        if(choice.correct && choice.next !== "end") score++;
+        renderStep(choice.next);
+      };
+      choicesDiv.appendChild(btn);
+    });
+
+    restartBtn.style.display = "none";
+    startBtn.style.display = "none";
+  }
+
+  restartBtn.onclick = () => {
+    score = 0;
+    storyText.textContent = "กดเริ่มเกมเพื่อเริ่มบทบาทพระพุทธเจ้า";
+    choicesDiv.innerHTML = "";
+    scoreDisplay.textContent = "";
+    restartBtn.style.display = "none";
+    startBtn.style.display = "inline-block";
+  };
+
+  startBtn.onclick = () => {
+    score = 0;
+    renderStep(0);
+  };
+</script>
+
+</body>
+</html>
